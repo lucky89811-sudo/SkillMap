@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillMap — Know Your Gap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0c10;
+      --surface: #13141a;
+      --surface2: #1c1d26;
+      --border: #2a2b38;
+      --border2: #3a3b4a;
+      --text: #f0f0f4;
+      --muted: #8889a0;
+      --accent: #c8f135;
+      --accent2: #7c6fff;
+      --accent3: #ff6b6b;
+      --tag-bg: #1e2030;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grid bg */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(200,241,53,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,241,53,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11,12,16,0.85);
+      backdrop-filter: blur(14px);
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .nav-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* MAIN */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* HERO */
+    .hero {
+      margin-bottom: 56px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 16px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 500px;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .card:focus-within {
+      border-color: var(--border2);
+    }
+
+    .card-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-label .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: var(--tag-bg);
+      border: 1px solid var(--border2);
+      border-radius: 50%;
+      font-size: 10px;
+      color: var(--accent);
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 16px;
+      resize: vertical;
+      min-height: 130px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    textarea::placeholder { color: var(--muted); opacity: 0.7; }
+    textarea:focus { border-color: var(--border2); }
+
+    /* SKILLS INPUT */
+    .skills-input-wrap {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]::placeholder { color: var(--muted); opacity: 0.7; }
+    input[type="text"]:focus { border-color: var(--border2); }
+
+    .add-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+
+    .add-btn:hover { background: var(--border); }
+
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+      min-height: 10px;
+    }
+
+    .skill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--tag-bg);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 5px 12px 5px 14px;
+      font-size: 13px;
+      color: var(--text);
+      animation: popIn 0.15s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .tag-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.15s;
+      display: flex;
+      align-items: center;
+    }
+
+    .tag-remove:hover { color: var(--accent3); }
+
+    /* ANALYZE BTN */
+    .analyze-btn {
+      width: 100%;
+      margin-top: 8px;
+      padding: 18px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: #0b0c10;
+      cursor: pointer;
+      letter-spacing: -0.3px;
+      transition: opacity 0.2s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .analyze-btn:hover { opacity: 0.9; }
+    .analyze-btn:active { transform: scale(0.99); }
+    .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* LOADING */
+    .loading-state {
+      display: none;
+      text-align: center;
+      padding: 60px 0;
+    }
+
+    .loading-state.visible { display: block; }
+
+    .loader-ring {
+      display: inline-block;
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .loading-steps {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* RESULTS */
+    #results { display: none; }
+    #results.visible { display: block; }
+
+    .result-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .result-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    /* SCORE BAR */
+    .score-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .score-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      text-align: center;
+    }
+
+    .score-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .score-num.green { color: #4ade80; }
+    .score-num.amber { color: #facc15; }
+    .score-num.red { color: var(--accent3); }
+
+    .score-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* MATCH BAR */
+    .match-bar-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .match-bar-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .match-bar-title { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+    .match-bar-pct { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; }
+
+    .bar-track {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+      width: 0%;
+    }
+
+    /* SKILLS GRID */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .skill-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+
+    .skill-block-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot.green { background: #4ade80; }
+    .dot.red { background: var(--accent3); }
+
+    .skill-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      margin: 4px 4px 4px 0;
+      line-height: 1.4;
+    }
+
+    .pill-have {
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.25);
+      color: #4ade80;
+    }
+
+    .pill-missing {
+      background: rgba(255,107,107,0.1);
+      border: 1px solid rgba(255,107,107,0.25);
+      color: #ff8080;
+    }
+
+    /* ANALYSIS SECTION */
+    .analysis-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .analysis-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: -0.3px;
+    }
+
+    .analysis-card p {
+      font-size: 14px;
+      color: #c0c0d0;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+
+    .analysis-card p:last-child { margin-bottom: 0; }
+
+    /* RESOURCES */
+    .resource-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .resource-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .resource-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--tag-bg);
+      border: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .resource-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .resource-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .resource-link {
+      margin-left: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid rgba(200,241,53,0.3);
+      padding: 5px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: background 0.15s;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    .resource-link:hover { background: rgba(200,241,53,0.1); }
+
+    /* PRIORITY BADGE */
+    .priority {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    .priority.high { background: rgba(255,107,107,0.15); color: #ff8080; border: 1px solid rgba(255,107,107,0.25); }
+    .priority.medium { background: rgba(250,204,21,0.1); color: #facc15; border: 1px solid rgba(250,204,21,0.25); }
+    .priority.low { background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
+
+    /* RESET */
+    .reset-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 32px;
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .reset-btn:hover { color: var(--text); border-color: var(--text); }
+
+    /* ERROR */
+    .error-box {
+      display: none;
+      background: rgba(255,107,107,0.1);
+      border: 1px solid rgba(255,107,107,0.3);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      font-size: 13px;
+      color: #ff8080;
+      margin-top: 12px;
+    }
+    .error-box.visible { display: block; }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      main { padding: 40px 16px 80px; }
+      .score-section { grid-template-columns: 1fr; gap: 10px; }
+      .two-col { grid-template-columns: 1fr; }
+      .score-num { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Skill<span>Map</span></div>
+
+</nav>
+
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Career Intelligence Tool</div>
+    <h1>Know your<br/><em>exact gap.</em></h1>
+    <p class="hero-sub">Paste any job description. Add your skills. Get a brutally honest analysis of what's missing and how to close it — fast.</p>
+  </div>
+
+  <!-- INPUT SECTION -->
+  <div id="inputSection">
+    <div class="card">
+      <div class="card-label"><span class="num">1</span> Job Description</div>
+      <textarea id="jdInput" placeholder="Paste the full job description here. The more detailed, the better the analysis..."></textarea>
+    </div>
+
+    <div class="card">
+      <div class="card-label"><span class="num">2</span> Your Current Skills</div>
+      <div class="skills-input-wrap">
+        <input type="text" id="skillInput" placeholder="e.g. JavaScript, React, Git..." />
+        <button class="add-btn" onclick="addSkill()">+ Add</button>
+      </div>
+      <div class="tags-wrap" id="tagsWrap"></div>
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Analyze My Gap
+    </button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" id="loadingState">
+    <div class="loader-ring"></div>
+    <div class="loading-text">ANALYZING</div>
+    <div class="loading-steps" id="loadingStep">Reading job description...</div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="result-header">
+      <div class="result-eyebrow">Analysis Complete</div>
+      <div class="result-title" id="resultRole">Software Engineer Role</div>
+    </div>
+
+    <div class="score-section">
+      <div class="score-card">
+        <div class="score-num" id="matchPct">—</div>
+        <div class="score-label">Match Score</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num green" id="haveCount">—</div>
+        <div class="score-label">Skills You Have</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num red" id="missingCount">—</div>
+        <div class="score-label">Skills Missing</div>
+      </div>
+    </div>
+
+    <div class="match-bar-wrap">
+      <div class="match-bar-label">
+        <span class="match-bar-title">Overall Readiness</span>
+        <span class="match-bar-pct" id="barPct">0%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" id="barFill"></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="skill-block">
+        <div class="skill-block-title"><span class="dot green"></span> Skills You Have</div>
+        <div id="haveSkills"></div>
+      </div>
+      <div class="skill-block">
+        <div class="skill-block-title"><span class="dot red"></span> Skills Missing</div>
+        <div id="missingSkills"></div>
+      </div>
+    </div>
+
+    <div class="analysis-card">
+      <h3>Honest Assessment</h3>
+      <div id="assessmentText"></div>
+    </div>
+
+    <div class="analysis-card">
+      <h3>How to Close the Gap</h3>
+      <div id="roadmapText"></div>
+    </div>
+
+    <div class="analysis-card">
+      <h3>Free Learning Resources</h3>
+      <div id="resourcesList"></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.91"/></svg>
+      Start New Analysis
+    </button>
+  </div>
+</main>
+
+
+
+<script>
+  const API_KEY_HEADER = "x-api-key";
+  let skills = [];
+
+  const skillInput = document.getElementById('skillInput');
+
+  skillInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addSkill(); }
+  });
+
+  function addSkill() {
+    const val = skillInput.value.trim();
+    if (!val) return;
+    const parts = val.split(',').map(s => s.trim()).filter(Boolean);
+    parts.forEach(p => {
+      if (p && !skills.includes(p.toLowerCase())) {
+        skills.push(p.toLowerCase());
+        renderTags();
+      }
+    });
+    skillInput.value = '';
+    skillInput.focus();
+  }
+
+  function removeSkill(idx) {
+    skills.splice(idx, 1);
+    renderTags();
+  }
+
+  function renderTags() {
+    const wrap = document.getElementById('tagsWrap');
+    wrap.innerHTML = '';
+    skills.forEach((s, i) => {
+      const tag = document.createElement('span');
+      tag.className = 'skill-tag';
+      tag.innerHTML = `${s}<button class="tag-remove" onclick="removeSkill(${i})">×</button>`;
+      wrap.appendChild(tag);
+    });
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.classList.add('visible');
+    setTimeout(() => box.classList.remove('visible'), 5000);
+  }
+
+  function hideError() {
+    document.getElementById('errorBox').classList.remove('visible');
+  }
+
+  const loadingSteps = [
+    'Reading job description...',
+    'Extracting required skills...',
+    'Comparing with your profile...',
+    'Generating personalized roadmap...',
+    'Finding learning resources...'
+  ];
+  let stepInterval;
+
+  function startLoadingSteps() {
+    let i = 0;
+    const el = document.getElementById('loadingStep');
+    el.textContent = loadingSteps[0];
+    stepInterval = setInterval(() => {
+      i = (i + 1) % loadingSteps.length;
+      el.textContent = loadingSteps[i];
+    }, 2000);
+  }
+
+  function stopLoadingSteps() {
+    clearInterval(stepInterval);
+  }
+
+  async function analyze() {
+    hideError();
+    const jd = document.getElementById('jdInput').value.trim();
+    if (!jd) { showError('Please paste a job description first.'); return; }
+    if (skills.length === 0) { showError('Please add at least one skill.'); return; }
+
+    document.getElementById('inputSection').style.display = 'none';
+    document.getElementById('loadingState').classList.add('visible');
+    document.getElementById('results').classList.remove('visible');
+    startLoadingSteps();
+
+    const prompt = `You are a career analyst. Analyze this job description and the candidate's skills.
+
+JOB DESCRIPTION:
+"""
+${jd}
+"""
+
+CANDIDATE'S SKILLS:
+${skills.join(', ')}
+
+Return a JSON object with EXACTLY this structure (no extra text, no markdown, just raw JSON):
+{
+  "role": "Detected job title",
+  "requiredSkills": ["skill1", "skill2", ...],
+  "matchedSkills": ["skills candidate has from required"],
+  "missingSkills": ["skills candidate lacks"],
+  "matchPercent": 72,
+  "assessment": "2-3 short paragraphs of honest assessment of the candidate's readiness for this role. Be direct and specific.",
+  "roadmap": "3-4 short paragraphs. Specific steps to close the gap. Mention timeline estimates.",
+  "resources": [
+    {"name": "Resource Name", "description": "short description", "url": "https://...", "priority": "high", "icon": "📘"},
+    {"name": "Resource Name", "description": "short description", "url": "https://...", "priority": "medium", "icon": "🎥"},
+    {"name": "Resource Name", "description": "short description", "url": "https://...", "priority": "low", "icon": "💻"}
+  ]
+}
+
+Rules:
+- matchPercent is an integer 0-100
+- matchedSkills and missingSkills are derived from requiredSkills vs candidate skills
+- resources must have REAL valid URLs (freeCodeCamp, MDN, YouTube, roadmap.sh, etc.)
+- priority is "high", "medium", or "low"
+- Return ONLY the JSON, nothing else`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 2000,
+          system: 'You are a career analyst. Always respond with valid raw JSON only. No markdown, no code fences, no explanation. Just the JSON object.',
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${res.status}`);
+      }
+
+      const data = await res.json();
+      const raw = data.content.map(b => b.text || '').join('');
+
+      let parsed;
+      try {
+        // Strip markdown code fences if present
+        let clean = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+        // Extract the JSON object
+        const jsonMatch = clean.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found in response');
+        parsed = JSON.parse(jsonMatch[0]);
+      } catch (parseErr) {
+        // Last resort: try parsing the whole cleaned string
+        try {
+          let clean2 = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+          parsed = JSON.parse(clean2);
+        } catch {
+          throw new Error('Response format error. Please try again.');
+        }
+      }
+
+      stopLoadingSteps();
+      document.getElementById('loadingState').classList.remove('visible');
+      renderResults(parsed);
+
+    } catch (err) {
+      stopLoadingSteps();
+      document.getElementById('loadingState').classList.remove('visible');
+      document.getElementById('inputSection').style.display = 'block';
+      showError('Analysis failed: ' + (err.message || 'Unknown error. Please try again.'));
+    }
+  }
+
+  function renderResults(d) {
+    const pct = Math.min(100, Math.max(0, parseInt(d.matchPercent) || 0));
+    const matched = Array.isArray(d.matchedSkills) ? d.matchedSkills : [];
+    const missing = Array.isArray(d.missingSkills) ? d.missingSkills : [];
+
+    document.getElementById('resultRole').textContent = d.role || 'Role Analysis';
+    document.getElementById('matchPct').textContent = pct + '%';
+    document.getElementById('matchPct').className = 'score-num ' + (pct >= 70 ? 'green' : pct >= 40 ? 'amber' : 'red');
+    document.getElementById('haveCount').textContent = matched.length;
+    document.getElementById('missingCount').textContent = missing.length;
+    document.getElementById('barPct').textContent = pct + '%';
+
+    document.getElementById('haveSkills').innerHTML = matched.length
+      ? matched.map(s => `<span class="skill-pill pill-have">✓ ${s}</span>`).join('')
+      : '<span style="color:var(--muted);font-size:13px">None matched</span>';
+
+    document.getElementById('missingSkills').innerHTML = missing.length
+      ? missing.map(s => `<span class="skill-pill pill-missing">✗ ${s}</span>`).join('')
+      : '<span style="color:#4ade80;font-size:13px">None! Great match.</span>';
+
+    const assessment = d.assessment || '';
+    document.getElementById('assessmentText').innerHTML = assessment
+      .split('\n').filter(Boolean)
+      .map(p => `<p>${p}</p>`).join('');
+
+    const roadmap = d.roadmap || '';
+    document.getElementById('roadmapText').innerHTML = roadmap
+      .split('\n').filter(Boolean)
+      .map(p => `<p>${p}</p>`).join('');
+
+    const resources = Array.isArray(d.resources) ? d.resources.slice(0, 5) : [];
+    document.getElementById('resourcesList').innerHTML = resources.map(r => `
+      <div class="resource-item">
+        <div class="resource-icon">${r.icon || '📚'}</div>
+        <div style="flex:1;min-width:0">
+          <div class="priority ${r.priority || 'medium'}">${r.priority || 'medium'} priority</div>
+          <div class="resource-name">${r.name || ''}</div>
+          <div class="resource-desc">${r.description || ''}</div>
+        </div>
+        ${r.url ? `<a class="resource-link" href="${r.url}" target="_blank" rel="noopener">Open ↗</a>` : ''}
+      </div>
+    `).join('');
+
+    document.getElementById('results').classList.add('visible');
+
+    setTimeout(() => {
+      document.getElementById('barFill').style.width = pct + '%';
+    }, 100);
+
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function resetAll() {
+    skills = [];
+    renderTags();
+    document.getElementById('jdInput').value = '';
+    document.getElementById('skillInput').value = '';
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('inputSection').style.display = 'block';
+
+    ['matchPct','haveCount','missingCount','barPct','haveSkills','missingSkills',
+     'assessmentText','roadmapText','resourcesList','resultRole'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = id === 'barFill' ? '' : '';
+    });
+    document.getElementById('barFill').style.width = '0%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
