@@ -20,7 +20,7 @@ Hit Analyze
 Read your results
 
 Live Link
-👉 https://lucky89811-sudo.github.io/SkillMap
+👉 https://lucky89811-sudo.github.io/SkillMap/
 Tech
 HTML · CSS · JavaScript · Claude API
 Author
